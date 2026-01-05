@@ -16,7 +16,7 @@ def create_app():
     db.init_app(app)
     
     # Import models (important for migrations)
-    # from app.models import ...
+    from app.models import Category, Medicine, Sale, SaleItem
     
     # Import Routes
     # eg: from .routes.home import home
