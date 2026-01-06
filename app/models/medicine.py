@@ -1,3 +1,4 @@
+from datetime import datetime
 from app.main import db
 
 
@@ -11,17 +12,36 @@ class Medicine(db.Model):
     # Category link
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
     
-    # Pricing
-    price = db.Column(db.Float, nullable=False)  # Selling price per unit
+    # Unit Logic
+    packing_type = db.Column(db.String(50), default="Strip")  # "Strip", "Bottle", "Box"
+    units_per_pack = db.Column(db.Integer, default=1, nullable=False)  # 10 for strip, 1 for bottle
     
-    # Stock
-    stock_quantity = db.Column(db.Integer, default=0)
-    
-    # Unit info (e.g., "strip of 10", "100ml bottle", "single vial")
-    unit = db.Column(db.String(50))
-    
-    # Optional: Manufacturer/Brand
+    # Basic Info
     manufacturer = db.Column(db.String(100))
+    generic_name = db.Column(db.String(100))  # Composition
+    
+    # Status
+    min_stock_level = db.Column(db.Integer, default=10) # Alert threshold
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<Medicine {self.name}>'
+    
+    @property
+    def total_stock(self):
+        """Total stock across all batches."""
+        return sum(b.stock_quantity for b in self.batches)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'category': self.category.name if self.category else None,
+            'total_stock': self.total_stock,
+            'packing_type': self.packing_type,
+            'units_per_pack': self.units_per_pack
+        }
