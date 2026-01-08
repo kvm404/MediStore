@@ -8,10 +8,11 @@ class Sale(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     sale_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    total_amount = db.Column(db.Float, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False, default=0)
     
     # Optional: Customer info (for future use)
     customer_name = db.Column(db.String(100))
+    customer_phone = db.Column(db.String(20))
     
     # Relationship
     items = db.relationship('SaleItem', backref='sale', lazy=True, cascade='all, delete-orphan')

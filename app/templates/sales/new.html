@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}New Sale - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-cart-plus me-2"></i>New Sale</h2>
+    <a href="{{ url_for('sales.list_sales') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Sales
+    </a>
+</div>
+
+<div class="row">
+    <!-- Left: Search and Add Items -->
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-search me-2"></i>Add Items</h5>
+            </div>
+            <div class="card-body">
+                <!-- Medicine Search -->
+                <div class="mb-3">
+                    <label class="form-label">Search Medicine</label>
+                    <div class="position-relative">
+                        <input type="text" id="medicineSearch" class="form-control form-control-lg" 
+                               placeholder="Type medicine name..." autocomplete="off">
+                        <div id="searchResults" class="position-absolute w-100 bg-white border rounded shadow-sm" 
+                             style="display: none; z-index: 1000; max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+                
+                <!-- Selected Medicine Details -->
+                <div id="selectedMedicine" class="border rounded p-3 mb-3" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h5 id="selectedName" class="mb-1"></h5>
+                            <small id="selectedCategory" class="text-muted"></small>
+                        </div>
+                        <button type="button" class="btn-close" onclick="clearSelection()"></button>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Select Batch</label>
+                            <select id="batchSelect" class="form-select">
+                                <option value="">Choose batch...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" id="quantity" class="form-control" value="1" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Unit Price</label>
+                            <input type="text" id="unitPrice" class="form-control" readonly>
+                        </div>
+                    </div>
+                    
+                    <div id="batchInfo" class="mt-2 small text-muted"></div>
+                    
+                    <button type="button" class="btn btn-primary mt-3" onclick="addToCart()">
+                        <i class="bi bi-plus-lg me-1"></i>Add to Cart
+                    </button>
+                </div>
+                
+                <!-- Unlisted Item Section -->
+                <div class="border-top pt-3 mt-3">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#unlistedSection">
+                        <i class="bi bi-plus-circle me-1"></i>Add Unlisted Item
+                    </button>
+                    
+                    <div class="collapse mt-3" id="unlistedSection">
+                        <div class="card card-body bg-light">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Item Name</label>
+                                    <input type="text" id="unlistedName" class="form-control" 
+                                           placeholder="Enter item name">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" id="unlistedQty" class="form-control" value="1" min="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Unit Price (₹)</label>
+                                    <input type="number" id="unlistedPrice" class="form-control" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary mt-3" onclick="addUnlistedItem()">
+                                <i class="bi bi-plus-lg me-1"></i>Add Unlisted Item
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right: Cart -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-cart3 me-2"></i>Cart</h5>
+                <span class="badge bg-primary" id="cartCount">0 items</span>
+            </div>
+            <div class="card-body p-0">
+                <div id="emptyCart" class="text-center py-5 text-muted">
+                    <i class="bi bi-cart display-4"></i>
+                    <p class="mt-2">Cart is empty</p>
+                </div>
+                
+                <div id="cartItems" style="display: none;">
+                    <ul class="list-group list-group-flush" id="cartList"></ul>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <strong>Total Amount:</strong>
+                    <strong class="fs-4 text-success" id="totalAmount">₹0.00</strong>
+                </div>
+                
+                <!-- Customer Info (Optional) -->
+                <div class="mb-3">
+                    <input type="text" id="customerName" class="form-control form-control-sm mb-2" 
+                           placeholder="Customer Name (optional)">
+                    <input type="text" id="customerPhone" class="form-control form-control-sm" 
+                           placeholder="Phone Number (optional)">
+                </div>
+                
+                <button type="button" class="btn btn-success btn-lg w-100" id="completeSaleBtn" 
+                        onclick="completeSale()" disabled>
+                    <i class="bi bi-check-circle me-2"></i>Complete Sale
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cart = [];
+let selectedMedicine = null;
+let searchTimeout = null;
+
+// Medicine Search
+document.getElementById('medicineSearch').addEventListener('input', function() {
+    const query = this.value.trim();
+    
+    clearTimeout(searchTimeout);
+    
+    if (query.length < 2) {
+        document.getElementById('searchResults').style.display = 'none';
+        return;
+    }
+    
+    searchTimeout = setTimeout(() => {
+        fetch(`/api/medicines/search?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('searchResults');
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="p-3 text-muted">No medicines found</div>';
+                } else {
+                    resultsDiv.innerHTML = data.map(med => `
+                        <div class="p-2 border-bottom search-result" 
+                             onclick='selectMedicine(${JSON.stringify(med)})' 
+                             style="cursor: pointer;">
+                            <strong>${med.name}</strong>
+                            <br>
+                            <small class="text-muted">
+                                ${med.category} | Stock: ${med.total_stock} | 
+                                ${med.batches.length} batch(es)
+                            </small>
+                        </div>
+                    `).join('');
+                }
+                
+                resultsDiv.style.display = 'block';
+            })
+            .catch(err => console.error('Search error:', err));
+    }, 300);
+});
+
+// Hide search results when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#medicineSearch') && !e.target.closest('#searchResults')) {
+        document.getElementById('searchResults').style.display = 'none';
+    }
+});
+
+// Select Medicine
+function selectMedicine(medicine) {
+    selectedMedicine = medicine;
+    
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('medicineSearch').value = '';
+    document.getElementById('selectedMedicine').style.display = 'block';
+    document.getElementById('selectedName').textContent = medicine.name;
+    document.getElementById('selectedCategory').textContent = 
+        `${medicine.category} | ${medicine.packing_type} of ${medicine.units_per_pack}`;
+    
+    // Populate batch dropdown (FEFO - already sorted by expiry)
+    const batchSelect = document.getElementById('batchSelect');
+    batchSelect.innerHTML = '<option value="">Choose batch...</option>' +
+        medicine.batches.map(b => `
+            <option value="${b.id}" 
+                    data-price="${b.unit_price}" 
+                    data-stock="${b.stock_quantity}"
+                    data-expiry="${b.expiry_date}"
+                    data-days="${b.days_until_expiry}">
+                ${b.batch_number} | ₹${b.mrp} | Stock: ${b.stock_quantity} | 
+                Exp: ${b.expiry_date} ${b.days_until_expiry <= 30 ? '⚠️' : ''}
+            </option>
+        `).join('');
+    
+    document.getElementById('unitPrice').value = '';
+    document.getElementById('batchInfo').textContent = '';
+    document.getElementById('quantity').value = 1;
+}
+
+// Batch Selection
+document.getElementById('batchSelect').addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
+    if (this.value) {
+        const price = selected.dataset.price;
+        const stock = selected.dataset.stock;
+        const days = selected.dataset.days;
+        
+        document.getElementById('unitPrice').value = `₹${parseFloat(price).toFixed(2)}`;
+        document.getElementById('quantity').max = stock;
+        
+        let info = `Available: ${stock} units`;
+        if (days <= 30) {
+            info += ` | <span class="text-warning">Expires in ${days} days</span>`;
+        }
+        document.getElementById('batchInfo').innerHTML = info;
+    } else {
+        document.getElementById('unitPrice').value = '';
+        document.getElementById('batchInfo').textContent = '';
+    }
+});
+
+// Clear Selection
+function clearSelection() {
+    selectedMedicine = null;
+    document.getElementById('selectedMedicine').style.display = 'none';
+}
+
+// Add to Cart
+function addToCart() {
+    const batchSelect = document.getElementById('batchSelect');
+    const quantity = parseInt(document.getElementById('quantity').value);
+    
+    if (!batchSelect.value) {
+        alert('Please select a batch');
+        return;
+    }
+    
+    const selected = batchSelect.options[batchSelect.selectedIndex];
+    const stock = parseInt(selected.dataset.stock);
+    
+    if (quantity > stock) {
+        alert(`Only ${stock} units available`);
+        return;
+    }
+    
+    // Check if already in cart
+    const existingIndex = cart.findIndex(item => item.batch_id === parseInt(batchSelect.value));
+    if (existingIndex >= 0) {
+        const newQty = cart[existingIndex].quantity + quantity;
+        if (newQty > stock) {
+            alert(`Cannot add more. Already ${cart[existingIndex].quantity} in cart. Stock: ${stock}`);
+            return;
+        }
+        cart[existingIndex].quantity = newQty;
+        cart[existingIndex].total = newQty * cart[existingIndex].unit_price;
+    } else {
+        cart.push({
+            batch_id: parseInt(batchSelect.value),
+            medicine_name: selectedMedicine.name,
+            batch_number: selected.text.split('|')[0].trim(),
+            quantity: quantity,
+            unit_price: parseFloat(selected.dataset.price),
+            total: quantity * parseFloat(selected.dataset.price),
+            is_unlisted: false
+        });
+    }
+    
+    updateCartUI();
+    clearSelection();
+}
+
+// Add Unlisted Item
+function addUnlistedItem() {
+    const name = document.getElementById('unlistedName').value.trim();
+    const qty = parseInt(document.getElementById('unlistedQty').value);
+    const price = parseFloat(document.getElementById('unlistedPrice').value);
+    
+    if (!name) {
+        alert('Please enter item name');
+        return;
+    }
+    if (!qty || qty < 1) {
+        alert('Please enter valid quantity');
+        return;
+    }
+    if (!price || price < 0) {
+        alert('Please enter valid price');
+        return;
+    }
+    
+    cart.push({
+        name: name,
+        quantity: qty,
+        unit_price: price,
+        total: qty * price,
+        is_unlisted: true
+    });
+    
+    // Clear inputs
+    document.getElementById('unlistedName').value = '';
+    document.getElementById('unlistedQty').value = 1;
+    document.getElementById('unlistedPrice').value = '';
+    
+    // Collapse section
+    bootstrap.Collapse.getInstance(document.getElementById('unlistedSection'))?.hide();
+    
+    updateCartUI();
+}
+
+// Update Cart UI
+function updateCartUI() {
+    const cartList = document.getElementById('cartList');
+    const emptyCart = document.getElementById('emptyCart');
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    const totalAmount = document.getElementById('totalAmount');
+    const completeSaleBtn = document.getElementById('completeSaleBtn');
+    
+    if (cart.length === 0) {
+        emptyCart.style.display = 'block';
+        cartItems.style.display = 'none';
+        completeSaleBtn.disabled = true;
+    } else {
+        emptyCart.style.display = 'none';
+        cartItems.style.display = 'block';
+        completeSaleBtn.disabled = false;
+    }
+    
+    cartCount.textContent = `${cart.length} item${cart.length !== 1 ? 's' : ''}`;
+    
+    let total = 0;
+    cartList.innerHTML = cart.map((item, index) => {
+        total += item.total;
+        const name = item.is_unlisted ? item.name : item.medicine_name;
+        const badge = item.is_unlisted ? 
+            '<span class="badge bg-secondary ms-1">Unlisted</span>' : '';
+        const subtitle = item.is_unlisted ? '' : 
+            `<small class="text-muted">Batch: ${item.batch_number}</small><br>`;
+        
+        return `
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>${name}</strong>${badge}<br>
+                        ${subtitle}
+                        <small>${item.quantity} × ₹${item.unit_price.toFixed(2)}</small>
+                    </div>
+                    <div class="text-end">
+                        <strong>₹${item.total.toFixed(2)}</strong><br>
+                        <button class="btn btn-sm btn-outline-danger mt-1" onclick="removeFromCart(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </li>
+        `;
+    }).join('');
+    
+    totalAmount.textContent = `₹${total.toFixed(2)}`;
+}
+
+// Remove from Cart
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartUI();
+}
+
+// Complete Sale
+function completeSale() {
+    if (cart.length === 0) {
+        alert('Cart is empty');
+        return;
+    }
+    
+    const customerName = document.getElementById('customerName').value.trim();
+    const customerPhone = document.getElementById('customerPhone').value.trim();
+    
+    const payload = {
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        items: cart.map(item => ({
+            batch_id: item.batch_id || null,
+            name: item.name || null,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            is_unlisted: item.is_unlisted
+        }))
+    };
+    
+    document.getElementById('completeSaleBtn').disabled = true;
+    document.getElementById('completeSaleBtn').innerHTML = 
+        '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    
+    fetch('/sales/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = `/sales/${data.sale_id}`;
+        } else {
+            alert('Error: ' + data.error);
+            document.getElementById('completeSaleBtn').disabled = false;
+            document.getElementById('completeSaleBtn').innerHTML = 
+                '<i class="bi bi-check-circle me-2"></i>Complete Sale';
+        }
+    })
+    .catch(err => {
+        console.error('Sale error:', err);
+        alert('Error completing sale');
+        document.getElementById('completeSaleBtn').disabled = false;
+        document.getElementById('completeSaleBtn').innerHTML = 
+            '<i class="bi bi-check-circle me-2"></i>Complete Sale';
+    });
+}
+</script>
+{% endblock %}

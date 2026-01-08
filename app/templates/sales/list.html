@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Sales History - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-receipt me-2"></i>Sales History</h2>
+    <a href="{{ url_for('sales.new_sale') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>New Sale
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Filter by Date</label>
+                <input type="date" name="date" class="form-control" 
+                       value="{{ date_filter }}" onchange="this.form.submit()">
+            </div>
+            <div class="col-md-2">
+                {% if date_filter %}
+                <a href="{{ url_for('sales.list_sales') }}" class="btn btn-outline-secondary">
+                    Clear Filter
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sales Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sale #</th>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th class="text-end">Total Amount</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales.items %}
+                    <tr>
+                        <td><strong>#{{ sale.id }}</strong></td>
+                        <td>
+                            {{ sale.sale_date.strftime('%d %b %Y') }}<br>
+                            <small class="text-muted">{{ sale.sale_date.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td>
+                            {% if sale.customer_name %}
+                                {{ sale.customer_name }}<br>
+                                <small class="text-muted">{{ sale.customer_phone or '-' }}</small>
+                            {% else %}
+                                <span class="text-muted">Walk-in Customer</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ sale.items | length }} items</span>
+                        </td>
+                        <td class="text-end">
+                            <strong class="text-success">₹{{ "%.2f"|format(sale.total_amount) }}</strong>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('sales.view_sale', sale_id=sale.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-receipt display-4"></i>
+                            <p class="mt-2">No sales found</p>
+                            <a href="{{ url_for('sales.new_sale') }}" class="btn btn-primary">
+                                Create First Sale
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if sales.pages > 1 %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                {% if sales.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('sales.list_sales', page=sales.prev_num, date=date_filter) }}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for p in sales.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {{ 'active' if p == sales.page else '' }}">
+                        <a class="page-link" href="{{ url_for('sales.list_sales', page=p, date=date_filter) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if sales.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('sales.list_sales', page=sales.next_num, date=date_filter) }}">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

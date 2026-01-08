@@ -22,11 +22,13 @@ def create_app():
     from app.routes.home import home
     from app.routes.medicines import medicines
     from app.routes.api import api
+    from app.routes.sales import bp as sales
 
     # Register Routes
     app.register_blueprint(home, url_prefix='/')
     app.register_blueprint(medicines, url_prefix='/medicines')
     app.register_blueprint(api, url_prefix='/api')
+    app.register_blueprint(sales)
 
 
 

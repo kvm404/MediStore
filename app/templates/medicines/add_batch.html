@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Add Batch - {{ medicine.name }} - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="bi bi-box-seam me-2"></i>Add New Batch</h2>
+        <p class="text-muted mb-0">For: <strong>{{ medicine.name }}</strong></p>
+    </div>
+    <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Medicine
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Batch Number -->
+                        <div class="col-md-6">
+                            <label class="form-label">Batch Number <span class="text-danger">*</span></label>
+                            <input type="text" name="batch_number" class="form-control" 
+                                   placeholder="e.g., B001, MFG2024-01" required>
+                        </div>
+                        
+                        <!-- Expiry Date -->
+                        <div class="col-md-6">
+                            <label class="form-label">Expiry Date <span class="text-danger">*</span></label>
+                            <input type="date" name="expiry_date" class="form-control" required>
+                        </div>
+                        
+                        <!-- MRP -->
+                        <div class="col-md-4">
+                            <label class="form-label">MRP (₹) <span class="text-danger">*</span></label>
+                            <input type="number" name="mrp" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00" required>
+                            <small class="text-muted">Per {{ medicine.packing_type }}</small>
+                        </div>
+                        
+                        <!-- Purchase Price -->
+                        <div class="col-md-4">
+                            <label class="form-label">Purchase Price (₹)</label>
+                            <input type="number" name="purchase_price" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                            <small class="text-muted">Cost price (optional)</small>
+                        </div>
+                        
+                        <!-- Stock Quantity -->
+                        <div class="col-md-4">
+                            <label class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                            <input type="number" name="stock_quantity" class="form-control" 
+                                   min="0" placeholder="0" required>
+                            <small class="text-muted">Number of units</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Add Batch
+                        </button>
+                        <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}" 
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Medicine Info Card -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-capsule me-2"></i>Medicine Info</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <th class="ps-0">Name:</th>
+                        <td class="pe-0">{{ medicine.name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-0">Category:</th>
+                        <td class="pe-0">{{ medicine.category.name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-0">Packing:</th>
+                        <td class="pe-0">{{ medicine.packing_type }} of {{ medicine.units_per_pack }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-0">Current Stock:</th>
+                        <td class="pe-0">
+                            <span class="badge {% if medicine.is_out_of_stock %}bg-danger{% elif medicine.is_low_stock %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ medicine.total_stock }} units
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-info-circle me-2"></i>Tips</h6>
+                <ul class="mb-0 small">
+                    <li class="mb-2">Enter MRP for the complete pack ({{ medicine.packing_type }})</li>
+                    <li class="mb-2">Unit price will be calculated automatically (MRP ÷ {{ medicine.units_per_pack }})</li>
+                    <li>Stock quantity is in base units (e.g., individual tablets)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

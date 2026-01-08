@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Add Medicine - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-plus-circle me-2"></i>Add New Medicine</h2>
+    <a href="{{ url_for('medicines.list_medicines') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Medicines
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Medicine Name -->
+                        <div class="col-md-6">
+                            <label class="form-label">Medicine Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" 
+                                   placeholder="e.g., Paracetamol 500mg" required>
+                        </div>
+                        
+                        <!-- Generic Name -->
+                        <div class="col-md-6">
+                            <label class="form-label">Generic Name</label>
+                            <input type="text" name="generic_name" class="form-control" 
+                                   placeholder="e.g., Paracetamol">
+                        </div>
+                        
+                        <!-- Category -->
+                        <div class="col-md-6">
+                            <label class="form-label">Category <span class="text-danger">*</span></label>
+                            <select name="category_id" class="form-select" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Manufacturer -->
+                        <div class="col-md-6">
+                            <label class="form-label">Manufacturer</label>
+                            <input type="text" name="manufacturer" class="form-control" 
+                                   placeholder="e.g., Cipla, Sun Pharma">
+                        </div>
+                        
+                        <!-- Packing Type -->
+                        <div class="col-md-4">
+                            <label class="form-label">Packing Type</label>
+                            <select name="packing_type" class="form-select">
+                                <option value="Strip">Strip</option>
+                                <option value="Box">Box</option>
+                                <option value="Bottle">Bottle</option>
+                                <option value="Vial">Vial</option>
+                                <option value="Tube">Tube</option>
+                                <option value="Sachet">Sachet</option>
+                                <option value="Ampoule">Ampoule</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Units Per Pack -->
+                        <div class="col-md-4">
+                            <label class="form-label">Units Per Pack</label>
+                            <input type="number" name="units_per_pack" class="form-control" 
+                                   value="10" min="1">
+                            <small class="text-muted">e.g., 10 tablets per strip</small>
+                        </div>
+                        
+                        <!-- Min Stock Level -->
+                        <div class="col-md-4">
+                            <label class="form-label">Min Stock Level</label>
+                            <input type="number" name="min_stock_level" class="form-control" 
+                                   value="10" min="0">
+                            <small class="text-muted">Low stock alert threshold</small>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="2" 
+                                      placeholder="Optional notes about the medicine"></textarea>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Add Medicine
+                        </button>
+                        <a href="{{ url_for('medicines.list_medicines') }}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Tips</h5>
+                <ul class="mb-0 small">
+                    <li class="mb-2">After adding medicine, you'll need to add batch/stock information</li>
+                    <li class="mb-2">Use consistent naming for easy search (e.g., "Drug Name Strength")</li>
+                    <li class="mb-2">Min stock level triggers low stock alerts on dashboard</li>
+                    <li>Generic name helps when searching across brands</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
