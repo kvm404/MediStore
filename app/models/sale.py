@@ -35,21 +35,33 @@ class Sale(db.Model):
 
 
 class SaleItem(db.Model):
-    """Individual item in a sale."""
+    """Individual item in a sale. Supports both listed and unlisted items."""
     __tablename__ = 'sale_items'
     
     id = db.Column(db.Integer, primary_key=True)
     sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
-    batch_id = db.Column(db.Integer, db.ForeignKey('batches.id'), nullable=False)
     
-    quantity = db.Column(db.Integer, nullable=False) # In base units (e.g. tablets)
+    # For listed items (linked to inventory)
+    batch_id = db.Column(db.Integer, db.ForeignKey('batches.id'), nullable=True)
+    
+    # For unlisted/quick sale items (when medicine not in database yet)
+    item_name = db.Column(db.String(100), nullable=True)  # Manual entry name
+    
+    quantity = db.Column(db.Integer, nullable=False)  # In base units (e.g. tablets)
     price_at_sale = db.Column(db.Float, nullable=False)  # Price per unit when sold
     
     # Relationship
     batch = db.relationship('Batch', backref='sale_items')
     
+    @property
+    def is_listed_item(self):
+        """Check if this is a listed (inventory-tracked) item."""
+        return self.batch_id is not None
+    
     def __repr__(self):
-        return f'<SaleItem Batch:{self.batch_id} x{self.quantity}>'
+        if self.batch_id:
+            return f'<SaleItem Batch:{self.batch_id} x{self.quantity}>'
+        return f'<SaleItem Unlisted:"{self.item_name}" x{self.quantity}>'
     
     @property
     def subtotal(self):
@@ -58,11 +70,25 @@ class SaleItem(db.Model):
     
     def to_dict(self):
         """Convert to dictionary for JSON responses."""
-        return {
-            'id': self.id,
-            'medicine_name': self.batch.medicine.name if self.batch else 'Unknown',
-            'batch_number': self.batch.batch_number if self.batch else 'Unknown',
-            'quantity': self.quantity,
-            'price_at_sale': self.price_at_sale,
-            'subtotal': self.subtotal
-        }
+        if self.batch:
+            # Listed item (from inventory)
+            return {
+                'id': self.id,
+                'is_listed': True,
+                'medicine_name': self.batch.medicine.name,
+                'batch_number': self.batch.batch_number,
+                'quantity': self.quantity,
+                'price_at_sale': self.price_at_sale,
+                'subtotal': self.subtotal
+            }
+        else:
+            # Unlisted/Quick sale item
+            return {
+                'id': self.id,
+                'is_listed': False,
+                'medicine_name': self.item_name or 'Unlisted Item',
+                'batch_number': None,
+                'quantity': self.quantity,
+                'price_at_sale': self.price_at_sale,
+                'subtotal': self.subtotal
+            }

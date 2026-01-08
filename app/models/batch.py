@@ -5,6 +5,9 @@ from app.main import db
 class Batch(db.Model):
     """Specific batch of a medicine with expiry and stock."""
     __tablename__ = 'batches'
+    __table_args__ = (
+        db.UniqueConstraint('medicine_id', 'batch_number', name='unique_batch_per_medicine'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     medicine_id = db.Column(db.Integer, db.ForeignKey('medicines.id'), nullable=False)
@@ -35,6 +38,17 @@ class Batch(db.Model):
         return self.expiry_date < datetime.now().date()
     
     @property
+    def days_until_expiry(self):
+        """Days remaining until expiry. Negative if expired."""
+        delta = self.expiry_date - datetime.now().date()
+        return delta.days
+    
+    @property
+    def is_expiring_soon(self):
+        """Check if expiring within 30 days."""
+        return 0 < self.days_until_expiry <= 30
+    
+    @property
     def unit_price(self):
         """Calculate price per single unit (tablet/ml)."""
         if self.medicine and self.medicine.units_per_pack > 0:
@@ -48,5 +62,8 @@ class Batch(db.Model):
             'expiry_date': self.expiry_date.strftime('%Y-%m-%d'),
             'stock_quantity': self.stock_quantity,
             'mrp': self.mrp,
-            'is_expired': self.is_expired
+            'unit_price': self.unit_price,
+            'is_expired': self.is_expired,
+            'days_until_expiry': self.days_until_expiry,
+            'is_expiring_soon': self.is_expiring_soon
         }

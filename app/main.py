@@ -19,10 +19,10 @@ def create_app():
     from app.models import Category, Medicine, Batch, Sale, SaleItem
     
     # Import Routes
-    # eg: from .routes.home import home
+    from app.routes.home import home
 
     # Register Routes
-    # eg: app.register_blueprint(home, url_prefix='/')
+    app.register_blueprint(home, url_prefix='/')
 
 
 

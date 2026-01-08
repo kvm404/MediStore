@@ -33,8 +33,18 @@ class Medicine(db.Model):
     
     @property
     def total_stock(self):
-        """Total stock across all batches."""
-        return sum(b.stock_quantity for b in self.batches)
+        """Total stock across all active batches."""
+        return sum(b.stock_quantity for b in self.batches if b.is_active)
+    
+    @property
+    def is_low_stock(self):
+        """Check if total stock is below minimum level."""
+        return self.total_stock <= self.min_stock_level
+    
+    @property
+    def is_out_of_stock(self):
+        """Check if item is out of stock."""
+        return self.total_stock == 0
     
     def to_dict(self):
         return {
@@ -43,5 +53,7 @@ class Medicine(db.Model):
             'category': self.category.name if self.category else None,
             'total_stock': self.total_stock,
             'packing_type': self.packing_type,
-            'units_per_pack': self.units_per_pack
+            'units_per_pack': self.units_per_pack,
+            'is_low_stock': self.is_low_stock,
+            'is_active': self.is_active
         }
