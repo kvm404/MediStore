@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Medicines - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-capsule"></i> Medicines</h2>
+    <a href="#" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Add Medicine
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Medicine name..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Stock Status</label>
+                <select name="stock" class="form-select">
+                    <option value="">All</option>
+                    <option value="ok" {% if stock_filter == 'ok' %}selected{% endif %}>In Stock</option>
+                    <option value="low" {% if stock_filter == 'low' %}selected{% endif %}>Low Stock</option>
+                    <option value="out" {% if stock_filter == 'out' %}selected{% endif %}>Out of Stock</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Medicines Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Packing</th>
+                    <th>Manufacturer</th>
+                    <th class="text-center">Stock</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in medicines %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('medicines.view_medicine', medicine_id=med.id) }}" class="text-decoration-none fw-bold">
+                            {{ med.name }}
+                        </a>
+                        {% if med.generic_name %}
+                        <br><small class="text-muted">{{ med.generic_name }}</small>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-secondary">{{ med.category.name }}</span></td>
+                    <td>{{ med.packing_type }} ({{ med.units_per_pack }}/pack)</td>
+                    <td>{{ med.manufacturer or '-' }}</td>
+                    <td class="text-center">
+                        {% if med.is_out_of_stock %}
+                        <span class="badge bg-danger">Out of Stock</span>
+                        {% elif med.is_low_stock %}
+                        <span class="badge bg-warning text-dark">{{ med.total_stock }} (Low)</span>
+                        {% else %}
+                        <span class="badge bg-success">{{ med.total_stock }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ url_for('medicines.view_medicine', medicine_id=med.id) }}" 
+                           class="btn btn-sm btn-outline-primary" title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No medicines found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted">
+        Showing {{ medicines|length }} medicine(s)
+    </div>
+</div>
+{% endblock %}
