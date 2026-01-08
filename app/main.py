@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from datetime import datetime
 
 
 db = SQLAlchemy()
@@ -14,6 +15,11 @@ def create_app():
     
     # Initialize extensions
     db.init_app(app)
+    
+    # Context processor to make 'now' available in all templates
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.now()}
     
     # Import models (important for migrations)
     from app.models import Category, Medicine, Batch, Sale, SaleItem

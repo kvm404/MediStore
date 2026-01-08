@@ -19,6 +19,7 @@ class Medicine(db.Model):
     # Basic Info
     manufacturer = db.Column(db.String(100))
     generic_name = db.Column(db.String(100))  # Composition
+    description = db.Column(db.Text)  # Optional notes
     
     # Status
     min_stock_level = db.Column(db.Integer, default=10) # Alert threshold
