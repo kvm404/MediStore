@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Batch - {{ medicine.name }} - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="bi bi-pencil me-2"></i>Edit Batch</h2>
+        <p class="text-muted mb-0">For: <strong>{{ medicine.name }}</strong></p>
+    </div>
+    <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Medicine
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Batch Number -->
+                        <div class="col-md-6">
+                            <label class="form-label">Batch Number <span class="text-danger">*</span></label>
+                            <input type="text" name="batch_number" class="form-control" 
+                                   value="{{ batch.batch_number }}" required>
+                        </div>
+                        
+                        <!-- Expiry Date -->
+                        <div class="col-md-6">
+                            <label class="form-label">Expiry Date <span class="text-danger">*</span></label>
+                            <input type="date" name="expiry_date" class="form-control" 
+                                   value="{{ batch.expiry_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        
+                        <!-- MRP -->
+                        <div class="col-md-4">
+                            <label class="form-label">MRP (₹) <span class="text-danger">*</span></label>
+                            <input type="number" name="mrp" class="form-control" 
+                                   step="0.01" min="0" value="{{ batch.mrp }}" required>
+                        </div>
+                        
+                        <!-- Purchase Price -->
+                        <div class="col-md-4">
+                            <label class="form-label">Purchase Price (₹)</label>
+                            <input type="number" name="purchase_price" class="form-control" 
+                                   step="0.01" min="0" value="{{ batch.purchase_price or '' }}">
+                        </div>
+                        
+                        <!-- Stock Quantity -->
+                        <div class="col-md-4">
+                            <label class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                            <input type="number" name="stock_quantity" class="form-control" 
+                                   min="0" value="{{ batch.stock_quantity }}" required>
+                            <small class="text-muted">Adjust stock here</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Save Changes
+                            </button>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}" 
+                               class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash me-1"></i>Delete Batch
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Batch Status -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-box-seam me-2"></i>Batch Status</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <th class="ps-0">Status:</th>
+                        <td class="pe-0">
+                            {% if batch.is_expired %}
+                            <span class="badge bg-danger">Expired</span>
+                            {% elif batch.is_expiring_soon %}
+                            <span class="badge bg-warning text-dark">Expiring Soon</span>
+                            {% else %}
+                            <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="ps-0">Days Until Expiry:</th>
+                        <td class="pe-0">
+                            {% if batch.is_expired %}
+                            <span class="text-danger">Expired</span>
+                            {% else %}
+                            {{ batch.days_until_expiry }} days
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="ps-0">Unit Price:</th>
+                        <td class="pe-0">₹{{ "%.2f"|format(batch.unit_price) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+                <ul class="mb-0 small">
+                    <li class="mb-2">Update stock quantity to adjust inventory</li>
+                    <li class="mb-2">Unit price is auto-calculated from MRP ÷ {{ medicine.units_per_pack }}</li>
+                    <li>Deleting a batch hides it but keeps sales history</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete batch <strong>{{ batch.batch_number }}</strong>?</p>
+                <p class="text-muted small">Current stock: {{ batch.stock_quantity }} units. Sales history will be preserved.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('medicines.delete_batch', batch_id=batch.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

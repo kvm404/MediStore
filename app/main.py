@@ -29,12 +29,16 @@ def create_app():
     from app.routes.medicines import medicines
     from app.routes.api import api
     from app.routes.sales import bp as sales
+    from app.routes.categories import categories
+    from app.routes.reports import reports
 
     # Register Routes
     app.register_blueprint(home, url_prefix='/')
     app.register_blueprint(medicines, url_prefix='/medicines')
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(sales)
+    app.register_blueprint(categories)
+    app.register_blueprint(reports)
 
 
 

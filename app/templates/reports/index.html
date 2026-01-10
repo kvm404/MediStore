@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - MediStore{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-graph-up me-2"></i>Reports</h2>
+    <p class="text-muted">View sales, inventory, and expiry reports</p>
+</div>
+
+<div class="row g-4">
+    <!-- Sales Report -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-currency-rupee display-4 text-success"></i>
+                </div>
+                <h5 class="card-title">Sales Report</h5>
+                <p class="card-text text-muted">View daily, weekly, and monthly sales with totals and breakdowns.</p>
+                <a href="{{ url_for('reports.sales_report') }}" class="btn btn-success">
+                    <i class="bi bi-arrow-right me-1"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expiry Report -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-calendar-x display-4 text-danger"></i>
+                </div>
+                <h5 class="card-title">Expiry Report</h5>
+                <p class="card-text text-muted">Track expired and expiring batches to minimize losses.</p>
+                <a href="{{ url_for('reports.expiry_report') }}" class="btn btn-danger">
+                    <i class="bi bi-arrow-right me-1"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stock Report -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-box-seam display-4 text-warning"></i>
+                </div>
+                <h5 class="card-title">Stock Report</h5>
+                <p class="card-text text-muted">Monitor low stock and out of stock medicines for reordering.</p>
+                <a href="{{ url_for('reports.stock_report') }}" class="btn btn-warning">
+                    <i class="bi bi-arrow-right me-1"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

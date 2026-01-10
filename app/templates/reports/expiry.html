@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Expiry Report - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-calendar-x me-2"></i>Expiry Report</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-danger">{{ expired_batches|length }}</h1>
+                <p class="text-muted mb-0">Expired Batches</p>
+                <small class="text-danger fw-bold">₹{{ "%.2f"|format(expired_value) }} at risk</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-warning">{{ expiring_soon|length }}</h1>
+                <p class="text-muted mb-0">Expiring Soon (30 days)</p>
+                <small class="text-warning fw-bold">₹{{ "%.2f"|format(expiring_value) }} at risk</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-info">{{ expiring_90|length }}</h1>
+                <p class="text-muted mb-0">Expiring in 90 days</p>
+                <small class="text-info fw-bold">₹{{ "%.2f"|format(expiring_90_value) }} at risk</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expired Batches -->
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Expired Batches</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch No</th>
+                        <th class="text-center">Expiry Date</th>
+                        <th class="text-center">Qty Left</th>
+                        <th class="text-end">Value at Risk</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in expired_batches %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=batch.medicine.id) }}">
+                                {{ batch.medicine.name }}
+                            </a>
+                        </td>
+                        <td>{{ batch.batch_number }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-danger">{{ batch.expiry_date.strftime('%d %b %Y') }}</span>
+                        </td>
+                        <td class="text-center">{{ batch.stock_quantity }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(batch.stock_quantity * batch.unit_price) }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.edit_batch', batch_id=batch.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-success py-4">
+                            <i class="bi bi-check-circle me-2"></i>No expired batches
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Expiring Soon (30 days) -->
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Expiring Within 30 Days</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch No</th>
+                        <th class="text-center">Expiry Date</th>
+                        <th class="text-center">Days Left</th>
+                        <th class="text-center">Qty Left</th>
+                        <th class="text-end">Value at Risk</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in expiring_soon %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=batch.medicine.id) }}">
+                                {{ batch.medicine.name }}
+                            </a>
+                        </td>
+                        <td>{{ batch.batch_number }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-warning text-dark">{{ batch.expiry_date.strftime('%d %b %Y') }}</span>
+                        </td>
+                        <td class="text-center">{{ (batch.expiry_date - today).days }}</td>
+                        <td class="text-center">{{ batch.stock_quantity }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(batch.stock_quantity * batch.unit_price) }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.edit_batch', batch_id=batch.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-success py-4">
+                            <i class="bi bi-check-circle me-2"></i>No batches expiring in 30 days
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Expiring in 90 Days -->
+<div class="card border-info">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Expiring Within 90 Days</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch No</th>
+                        <th class="text-center">Expiry Date</th>
+                        <th class="text-center">Days Left</th>
+                        <th class="text-center">Qty Left</th>
+                        <th class="text-end">Value at Risk</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in expiring_90 %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=batch.medicine.id) }}">
+                                {{ batch.medicine.name }}
+                            </a>
+                        </td>
+                        <td>{{ batch.batch_number }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-info">{{ batch.expiry_date.strftime('%d %b %Y') }}</span>
+                        </td>
+                        <td class="text-center">{{ (batch.expiry_date - today).days }}</td>
+                        <td class="text-center">{{ batch.stock_quantity }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(batch.stock_quantity * batch.unit_price) }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.edit_batch', batch_id=batch.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-success py-4">
+                            <i class="bi bi-check-circle me-2"></i>No batches expiring in 90 days
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

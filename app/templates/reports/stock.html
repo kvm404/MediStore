@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Report - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-box-seam me-2"></i>Stock Report</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-danger">{{ out_of_stock|length }}</h1>
+                <p class="text-muted mb-0">Out of Stock</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-warning">{{ low_stock|length }}</h1>
+                <p class="text-muted mb-0">Low Stock</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-success">{{ healthy_stock|length }}</h1>
+                <p class="text-muted mb-0">Healthy Stock</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-primary">₹{{ "%.0f"|format(total_stock_value) }}</h1>
+                <p class="text-muted mb-0">Total Stock Value</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Out of Stock -->
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-exclamation-octagon me-2"></i>Out of Stock</h5>
+        <span class="badge bg-light text-danger">{{ out_of_stock|length }} items</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Category</th>
+                        <th class="text-center">Min Stock</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine in out_of_stock %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}">
+                                {{ medicine.name }}
+                            </a>
+                            {% if medicine.packing_type %}
+                            <small class="text-muted">({{ medicine.packing_type }})</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ medicine.category.name }}</td>
+                        <td class="text-center">{{ medicine.min_stock_level }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.add_batch', medicine_id=medicine.id) }}" class="btn btn-sm btn-success">
+                                <i class="bi bi-plus me-1"></i>Add Stock
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-success py-4">
+                            <i class="bi bi-check-circle me-2"></i>No items out of stock
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Low Stock -->
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Low Stock</h5>
+        <span class="badge bg-dark">{{ low_stock|length }} items</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Category</th>
+                        <th class="text-center">Current Stock</th>
+                        <th class="text-center">Min Stock</th>
+                        <th class="text-center">Shortage</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine, total_qty in low_stock %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}">
+                                {{ medicine.name }}
+                            </a>
+                            {% if medicine.packing_type %}
+                            <small class="text-muted">({{ medicine.packing_type }})</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ medicine.category.name }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-warning text-dark">{{ total_qty }}</span>
+                        </td>
+                        <td class="text-center">{{ medicine.min_stock_level }}</td>
+                        <td class="text-center text-danger">-{{ medicine.min_stock_level - total_qty }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.add_batch', medicine_id=medicine.id) }}" class="btn btn-sm btn-success">
+                                <i class="bi bi-plus me-1"></i>Add Stock
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-success py-4">
+                            <i class="bi bi-check-circle me-2"></i>No items with low stock
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Healthy Stock -->
+<div class="card border-success">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Healthy Stock</h5>
+        <span class="badge bg-light text-success">{{ healthy_stock|length }} items</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-hover mb-0">
+                <thead class="table-light sticky-top">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Category</th>
+                        <th class="text-center">Current Stock</th>
+                        <th class="text-center">Min Stock</th>
+                        <th class="text-end">Stock Value</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medicine, total_qty, stock_value in healthy_stock %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}">
+                                {{ medicine.name }}
+                            </a>
+                            {% if medicine.packing_type %}
+                            <small class="text-muted">({{ medicine.packing_type }})</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ medicine.category.name }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-success">{{ total_qty }}</span>
+                        </td>
+                        <td class="text-center">{{ medicine.min_stock_level }}</td>
+                        <td class="text-end">₹{{ "%.2f"|format(stock_value) }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=medicine.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No items with healthy stock
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
