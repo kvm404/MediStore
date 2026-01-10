@@ -146,6 +146,13 @@ let cart = [];
 let selectedMedicine = null;
 let searchTimeout = null;
 
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Medicine Search
 document.getElementById('medicineSearch').addEventListener('input', function() {
     const query = this.value.trim();
@@ -170,10 +177,10 @@ document.getElementById('medicineSearch').addEventListener('input', function() {
                         <div class="p-2 border-bottom search-result" 
                              data-medicine-idx="${idx}"
                              style="cursor: pointer;">
-                            <strong>${med.name}</strong>
+                            <strong>${escapeHtml(med.name)}</strong>
                             <br>
                             <small class="text-muted">
-                                ${med.category} | Stock: ${med.total_stock} | 
+                                ${escapeHtml(med.category)} | Stock: ${med.total_stock} | 
                                 ${med.batches.length} batch(es)
                             </small>
                         </div>
@@ -219,10 +226,10 @@ function selectMedicine(medicine) {
             <option value="${b.id}" 
                     data-price="${b.unit_price}" 
                     data-stock="${b.stock_quantity}"
-                    data-expiry="${b.expiry_date}"
+                    data-expiry="${escapeHtml(b.expiry_date)}"
                     data-days="${b.days_until_expiry}">
-                ${b.batch_number} | ₹${b.mrp} | Stock: ${b.stock_quantity} | 
-                Exp: ${b.expiry_date} ${b.days_until_expiry <= 30 ? '⚠️' : ''}
+                ${escapeHtml(b.batch_number)} | ₹${b.mrp} | Stock: ${b.stock_quantity} | 
+                Exp: ${escapeHtml(b.expiry_date)} ${b.days_until_expiry <= 30 ? '⚠️' : ''}
             </option>
         `).join('');
     
@@ -365,11 +372,11 @@ function updateCartUI() {
     let total = 0;
     cartList.innerHTML = cart.map((item, index) => {
         total += item.total;
-        const name = item.is_unlisted ? item.name : item.medicine_name;
+        const name = escapeHtml(item.is_unlisted ? item.name : item.medicine_name);
         const badge = item.is_unlisted ? 
             '<span class="badge bg-secondary ms-1">Unlisted</span>' : '';
         const subtitle = item.is_unlisted ? '' : 
-            `<small class="text-muted">Batch: ${item.batch_number}</small><br>`;
+            `<small class="text-muted">Batch: ${escapeHtml(item.batch_number)}</small><br>`;
         
         return `
             <li class="list-group-item">

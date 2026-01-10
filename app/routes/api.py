@@ -15,7 +15,7 @@ def search_medicines():
     Returns JSON list of matching medicines with batch info.
     """
     query = request.args.get('q', '').strip()
-    limit = request.args.get('limit', 10, type=int)
+    limit = min(request.args.get('limit', 10, type=int), 50)  # Cap at 50
     
     if len(query) < 2:
         return jsonify([])
@@ -36,8 +36,8 @@ def search_medicines():
         results.append({
             'id': med.id,
             'name': med.name,
-            'generic_name': med.generic_name,
-            'category': med.category.name,
+            'generic_name': med.generic_name or '',
+            'category': med.category.name if med.category else 'Uncategorized',
             'packing_type': med.packing_type,
             'units_per_pack': med.units_per_pack,
             'total_stock': med.total_stock,

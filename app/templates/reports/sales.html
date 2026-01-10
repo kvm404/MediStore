@@ -23,13 +23,13 @@
                     <option value="custom" {% if period == 'custom' %}selected{% endif %}>Custom Range</option>
                 </select>
             </div>
-            <div class="col-md-2" id="startDateDiv" style="display: {% if period == 'custom' %}block{% else %}none{% endif %}">
+            <div class="col-md-2 {{ '' if period == 'custom' else 'd-none' }}" id="startDateDiv">
                 <label class="form-label">Start Date</label>
-                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                <input type="date" name="start_date" class="form-control" value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}">
             </div>
-            <div class="col-md-2" id="endDateDiv" style="display: {% if period == 'custom' %}block{% else %}none{% endif %}">
+            <div class="col-md-2 {{ '' if period == 'custom' else 'd-none' }}" id="endDateDiv">
                 <label class="form-label">End Date</label>
-                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                <input type="date" name="end_date" class="form-control" value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary">
@@ -151,8 +151,8 @@
 <script>
 function toggleCustomDates(value) {
     const show = value === 'custom';
-    document.getElementById('startDateDiv').style.display = show ? 'block' : 'none';
-    document.getElementById('endDateDiv').style.display = show ? 'block' : 'none';
+    document.getElementById('startDateDiv').classList.toggle('d-none', !show);
+    document.getElementById('endDateDiv').classList.toggle('d-none', !show);
 }
 </script>
 {% endblock %}

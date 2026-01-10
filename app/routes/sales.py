@@ -54,14 +54,29 @@ def create_sale():
         total_amount = 0
         
         for item in data['items']:
+            # Validate quantity and price
+            quantity = item.get('quantity', 0)
+            unit_price = item.get('unit_price', 0)
+            
+            if not isinstance(quantity, (int, float)) or quantity <= 0:
+                db.session.rollback()
+                return jsonify({'success': False, 'error': 'Invalid quantity. Must be a positive number.'}), 400
+            
+            if not isinstance(unit_price, (int, float)) or unit_price < 0:
+                db.session.rollback()
+                return jsonify({'success': False, 'error': 'Invalid price. Must be a non-negative number.'}), 400
+            
+            quantity = int(quantity)
+            unit_price = float(unit_price)
+            
             if item.get('is_unlisted'):
                 # Unlisted item
                 sale_item = SaleItem(
                     sale_id=sale.id,
                     batch_id=None,
-                    item_name=item['name'],
-                    quantity=item['quantity'],
-                    price_at_sale=item['unit_price']
+                    item_name=item.get('name', 'Unlisted Item')[:100],
+                    quantity=quantity,
+                    price_at_sale=unit_price
                 )
             else:
                 # Listed item with batch
@@ -70,7 +85,7 @@ def create_sale():
                     db.session.rollback()
                     return jsonify({'success': False, 'error': f'Batch not found: {item["batch_id"]}'}), 400
                 
-                if batch.stock_quantity < item['quantity']:
+                if batch.stock_quantity < quantity:
                     db.session.rollback()
                     return jsonify({
                         'success': False, 
@@ -78,13 +93,13 @@ def create_sale():
                     }), 400
                 
                 # Deduct stock
-                batch.stock_quantity -= item['quantity']
+                batch.stock_quantity -= quantity
                 
                 sale_item = SaleItem(
                     sale_id=sale.id,
                     batch_id=batch.id,
-                    quantity=item['quantity'],
-                    price_at_sale=item['unit_price']
+                    quantity=quantity,
+                    price_at_sale=unit_price
                 )
             
             total_amount += sale_item.subtotal
