@@ -166,9 +166,9 @@ document.getElementById('medicineSearch').addEventListener('input', function() {
                 if (data.length === 0) {
                     resultsDiv.innerHTML = '<div class="p-3 text-muted">No medicines found</div>';
                 } else {
-                    resultsDiv.innerHTML = data.map(med => `
+                    resultsDiv.innerHTML = data.map((med, idx) => `
                         <div class="p-2 border-bottom search-result" 
-                             onclick='selectMedicine(${JSON.stringify(med)})' 
+                             data-medicine-idx="${idx}"
                              style="cursor: pointer;">
                             <strong>${med.name}</strong>
                             <br>
@@ -178,6 +178,14 @@ document.getElementById('medicineSearch').addEventListener('input', function() {
                             </small>
                         </div>
                     `).join('');
+                    
+                    // Store data and add click handlers
+                    window._searchResults = data;
+                    resultsDiv.querySelectorAll('.search-result').forEach(el => {
+                        el.addEventListener('click', () => {
+                            selectMedicine(window._searchResults[el.dataset.medicineIdx]);
+                        });
+                    });
                 }
                 
                 resultsDiv.style.display = 'block';
