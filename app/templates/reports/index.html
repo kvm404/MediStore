@@ -5,21 +5,23 @@
 {% block content %}
 <div class="mb-4">
     <h2><i class="bi bi-graph-up me-2"></i>Reports</h2>
-    <p class="text-muted">View sales, inventory, and expiry reports</p>
+    <p class="text-muted">View operational and business intelligence reports</p>
 </div>
 
-<div class="row g-4">
+<!-- Operational Reports -->
+<h4 class="mb-3"><i class="bi bi-clipboard-data me-2"></i>Operational Reports</h4>
+<div class="row g-4 mb-5">
     <!-- Sales Report -->
     <div class="col-md-4">
-        <div class="card h-100">
+        <div class="card h-100 border-success">
             <div class="card-body text-center">
                 <div class="mb-3">
-                    <i class="bi bi-currency-rupee display-4 text-success"></i>
+                    <i class="bi bi-receipt display-4 text-success"></i>
                 </div>
                 <h5 class="card-title">Sales Report</h5>
-                <p class="card-text text-muted">View daily, weekly, and monthly sales with totals and breakdowns.</p>
+                <p class="card-text text-muted small">Daily/weekly/monthly sales with totals and breakdowns.</p>
                 <a href="{{ url_for('reports.sales_report') }}" class="btn btn-success">
-                    <i class="bi bi-arrow-right me-1"></i>View Report
+                    <i class="bi bi-arrow-right me-1"></i>View
                 </a>
             </div>
         </div>
@@ -27,15 +29,15 @@
     
     <!-- Expiry Report -->
     <div class="col-md-4">
-        <div class="card h-100">
+        <div class="card h-100 border-danger">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <i class="bi bi-calendar-x display-4 text-danger"></i>
                 </div>
                 <h5 class="card-title">Expiry Report</h5>
-                <p class="card-text text-muted">Track expired and expiring batches to minimize losses.</p>
+                <p class="card-text text-muted small">Track expired and expiring batches to minimize losses.</p>
                 <a href="{{ url_for('reports.expiry_report') }}" class="btn btn-danger">
-                    <i class="bi bi-arrow-right me-1"></i>View Report
+                    <i class="bi bi-arrow-right me-1"></i>View
                 </a>
             </div>
         </div>
@@ -43,15 +45,131 @@
     
     <!-- Stock Report -->
     <div class="col-md-4">
-        <div class="card h-100">
+        <div class="card h-100 border-warning">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <i class="bi bi-box-seam display-4 text-warning"></i>
                 </div>
                 <h5 class="card-title">Stock Report</h5>
-                <p class="card-text text-muted">Monitor low stock and out of stock medicines for reordering.</p>
+                <p class="card-text text-muted small">Monitor low stock and out of stock medicines.</p>
                 <a href="{{ url_for('reports.stock_report') }}" class="btn btn-warning">
-                    <i class="bi bi-arrow-right me-1"></i>View Report
+                    <i class="bi bi-arrow-right me-1"></i>View
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Business Reports -->
+<h4 class="mb-3"><i class="bi bi-bar-chart-line me-2"></i>Business Intelligence</h4>
+<div class="row g-4">
+    <!-- Profit & Loss -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-currency-rupee display-5 text-primary"></i>
+                </div>
+                <h6 class="card-title">Profit & Loss</h6>
+                <p class="card-text text-muted small">Revenue, costs, margins with charts.</p>
+                <a href="{{ url_for('reports.profit_report') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Sellers -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-trophy display-5 text-warning"></i>
+                </div>
+                <h6 class="card-title">Top Sellers</h6>
+                <p class="card-text text-muted small">Best selling products by quantity & revenue.</p>
+                <a href="{{ url_for('reports.top_sellers_report') }}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profitable Products -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-piggy-bank display-5 text-success"></i>
+                </div>
+                <h6 class="card-title">Profitable Products</h6>
+                <p class="card-text text-muted small">Products ranked by profit margin.</p>
+                <a href="{{ url_for('reports.profitable_products_report') }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Category Performance -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-pie-chart display-5 text-info"></i>
+                </div>
+                <h6 class="card-title">Category Performance</h6>
+                <p class="card-text text-muted small">Sales breakdown by category.</p>
+                <a href="{{ url_for('reports.category_performance_report') }}" class="btn btn-sm btn-info">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sales Trends -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-graph-up-arrow display-5 text-primary"></i>
+                </div>
+                <h6 class="card-title">Sales Trends</h6>
+                <p class="card-text text-muted small">This month vs last month comparison.</p>
+                <a href="{{ url_for('reports.trends_report') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dead Stock -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-archive display-5 text-secondary"></i>
+                </div>
+                <h6 class="card-title">Dead Stock</h6>
+                <p class="card-text text-muted small">Items not sold in 30/60/90 days.</p>
+                <a href="{{ url_for('reports.dead_stock_report') }}" class="btn btn-sm btn-secondary">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Margin Alerts -->
+    <div class="col-md-4 col-lg-3">
+        <div class="card h-100 border-danger">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="bi bi-exclamation-triangle display-5 text-danger"></i>
+                </div>
+                <h6 class="card-title">Margin Alerts</h6>
+                <p class="card-text text-muted small">Items sold below cost price.</p>
+                <a href="{{ url_for('reports.margin_alerts_report') }}" class="btn btn-sm btn-danger">
+                    <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
         </div>

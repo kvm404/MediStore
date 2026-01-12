@@ -1,0 +1,84 @@
+{# Reusable date filter macro for business reports #}
+
+{% macro month_year_filter(current_month, current_year, route_name) %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>
+                        {{ ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m-1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select">
+                    {% for y in range(current_year - 2, current_year + 1) %}
+                    <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i>Apply
+                </button>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{{ url_for(route_name) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset to Current
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro period_filter(current_period, route_name) %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Time Period</label>
+                <select name="period" class="form-select">
+                    <option value="this_month" {% if current_period == 'this_month' %}selected{% endif %}>This Month</option>
+                    <option value="last_month" {% if current_period == 'last_month' %}selected{% endif %}>Last Month</option>
+                    <option value="this_year" {% if current_period == 'this_year' %}selected{% endif %}>This Year</option>
+                    <option value="last_year" {% if current_period == 'last_year' %}selected{% endif %}>Last Year</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i>Apply
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro days_filter(current_days, route_name) %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">No Sales In</label>
+                <select name="days" class="form-select">
+                    <option value="30" {% if current_days == 30 %}selected{% endif %}>30 Days</option>
+                    <option value="60" {% if current_days == 60 %}selected{% endif %}>60 Days</option>
+                    <option value="90" {% if current_days == 90 %}selected{% endif %}>90 Days</option>
+                    <option value="180" {% if current_days == 180 %}selected{% endif %}>180 Days</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i>Apply
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endmacro %}

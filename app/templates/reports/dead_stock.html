@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% from "reports/_filters.html" import days_filter %}
+
+{% block title %}Dead Stock Report - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-archive me-2"></i>Dead Stock Report</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+    </a>
+</div>
+
+{{ days_filter(days, 'reports.dead_stock_report') }}
+
+<!-- Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-secondary">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-secondary">{{ item_count }}</h1>
+                <p class="text-muted mb-0">Items Not Sold in {{ days }} Days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-warning">₹{{ "%.0f"|format(total_dead_value) }}</h1>
+                <p class="text-muted mb-0">Capital Tied Up</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-muted">₹{{ "%.0f"|format(total_dead_value / item_count if item_count > 0 else 0) }}</h1>
+                <p class="text-muted mb-0">Avg Value per Item</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dead Stock Table -->
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-archive me-2"></i>
+            Items Not Sold in Last {{ days }} Days
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine</th>
+                        <th class="text-center">Current Stock</th>
+                        <th class="text-end">Stock Value</th>
+                        <th class="text-center">Last Sale</th>
+                        <th class="text-center">Days Idle</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in dead_stock %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=item.medicine.id) }}">
+                                {{ item.medicine.name }}
+                            </a>
+                            {% if item.medicine.category %}
+                            <br><small class="text-muted">{{ item.medicine.category.name }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">{{ item.stock }}</span>
+                        </td>
+                        <td class="text-end fw-bold">₹{{ "%.2f"|format(item.value) }}</td>
+                        <td class="text-center">
+                            {% if item.last_sale %}
+                            {{ item.last_sale.strftime('%d %b %Y') }}
+                            {% else %}
+                            <span class="text-danger">Never Sold</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if item.days_since %}
+                            <span class="badge {% if item.days_since > 90 %}bg-danger{% elif item.days_since > 60 %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                {{ item.days_since }} days
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger">∞</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('medicines.view_medicine', medicine_id=item.medicine.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-success py-5">
+                            <i class="bi bi-check-circle display-4"></i>
+                            <p class="mt-3 mb-0">No dead stock! All items sold within {{ days }} days. 🎉</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if dead_stock %}
+<div class="alert alert-info mt-4">
+    <i class="bi bi-lightbulb me-2"></i>
+    <strong>Recommendations:</strong>
+    <ul class="mb-0 mt-2">
+        <li>Consider offering discounts on slow-moving items</li>
+        <li>Review if these items are still in demand</li>
+        <li>Check expiry dates - items may need to be written off</li>
+        <li>Consider returning to supplier if possible</li>
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

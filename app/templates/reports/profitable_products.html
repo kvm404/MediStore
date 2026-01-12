@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% from "reports/_filters.html" import period_filter %}
+
+{% block title %}Profitable Products - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-piggy-bank me-2"></i>Profitable Products</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+    </a>
+</div>
+
+{{ period_filter(period, 'reports.profitable_products_report') }}
+
+<div class="row">
+    <!-- By Profit Amount -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-currency-rupee me-2"></i>Top 20 by Profit Amount</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>Medicine</th>
+                                <th class="text-end">Revenue</th>
+                                <th class="text-end">Profit</th>
+                                <th class="text-center">Margin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_by_profit %}
+                            <tr>
+                                <td><span class="badge bg-success">{{ loop.index }}</span></td>
+                                <td>
+                                    {{ item.name }}
+                                    <br>
+                                    <small class="text-muted">{{ item.quantity }} units sold</small>
+                                </td>
+                                <td class="text-end">₹{{ "%.2f"|format(item.revenue) }}</td>
+                                <td class="text-end fw-bold text-success">₹{{ "%.2f"|format(item.profit) }}</td>
+                                <td class="text-center">
+                                    <span class="badge {% if item.margin >= 25 %}bg-success{% elif item.margin >= 15 %}bg-info{% elif item.margin >= 5 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ "%.1f"|format(item.margin) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- By Margin % -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-percent me-2"></i>Top 20 by Margin Percentage</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>Medicine</th>
+                                <th class="text-center">Margin</th>
+                                <th class="text-end">Revenue</th>
+                                <th class="text-end">Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_by_margin %}
+                            <tr>
+                                <td><span class="badge bg-info">{{ loop.index }}</span></td>
+                                <td>
+                                    {{ item.name }}
+                                    <br>
+                                    <small class="text-muted">{{ item.quantity }} units sold</small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="progress" style="width: 60px; height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: {{ item.margin }}%">
+                                            {{ "%.0f"|format(item.margin) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end">₹{{ "%.2f"|format(item.revenue) }}</td>
+                                <td class="text-end fw-bold text-success">₹{{ "%.2f"|format(item.profit) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-light border mt-2">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Note:</strong> Profit is calculated as: <code>(Selling Price - Purchase Price) × Quantity</code>. 
+    Items without purchase price data are excluded.
+</div>
+{% endblock %}

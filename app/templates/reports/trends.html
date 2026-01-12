@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Trends - MediStore{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-graph-up-arrow me-2"></i>Sales Trends</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+    </a>
+</div>
+
+<!-- Comparison Cards -->
+<div class="row g-4 mb-4">
+    <!-- Revenue -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-currency-rupee me-2"></i>Revenue</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">This Month</small>
+                        <h4 class="text-primary mb-0">₹{{ "%.0f"|format(this_revenue) }}</h4>
+                    </div>
+                    <div class="col-6 text-end">
+                        <small class="text-muted">Last Month</small>
+                        <h4 class="text-muted mb-0">₹{{ "%.0f"|format(last_revenue) }}</h4>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    {% if revenue_growth > 0 %}
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-arrow-up"></i> +{{ "%.1f"|format(revenue_growth) }}%
+                    </span>
+                    {% elif revenue_growth < 0 %}
+                    <span class="badge bg-danger fs-6">
+                        <i class="bi bi-arrow-down"></i> {{ "%.1f"|format(revenue_growth) }}%
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary fs-6">No Change</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transactions -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>Transactions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">This Month</small>
+                        <h4 class="text-primary mb-0">{{ this_transactions }}</h4>
+                    </div>
+                    <div class="col-6 text-end">
+                        <small class="text-muted">Last Month</small>
+                        <h4 class="text-muted mb-0">{{ last_transactions }}</h4>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    {% if transaction_growth > 0 %}
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-arrow-up"></i> +{{ "%.1f"|format(transaction_growth) }}%
+                    </span>
+                    {% elif transaction_growth < 0 %}
+                    <span class="badge bg-danger fs-6">
+                        <i class="bi bi-arrow-down"></i> {{ "%.1f"|format(transaction_growth) }}%
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary fs-6">No Change</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profit -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-piggy-bank me-2"></i>Profit</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">This Month</small>
+                        <h4 class="text-success mb-0">₹{{ "%.0f"|format(this_profit) }}</h4>
+                    </div>
+                    <div class="col-6 text-end">
+                        <small class="text-muted">Last Month</small>
+                        <h4 class="text-muted mb-0">₹{{ "%.0f"|format(last_profit) }}</h4>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    {% if profit_growth > 0 %}
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-arrow-up"></i> +{{ "%.1f"|format(profit_growth) }}%
+                    </span>
+                    {% elif profit_growth < 0 %}
+                    <span class="badge bg-danger fs-6">
+                        <i class="bi bi-arrow-down"></i> {{ "%.1f"|format(profit_growth) }}%
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary fs-6">No Change</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-graph-up me-2"></i>
+            Daily Sales Comparison: 
+            <span class="text-primary">{{ this_month_start.strftime('%B %Y') }}</span> vs 
+            <span class="text-secondary">{{ last_month_start.strftime('%B %Y') }}</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        <canvas id="trendsChart" height="100"></canvas>
+    </div>
+</div>
+
+<!-- Summary Table -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">{{ this_month_start.strftime('%B %Y') }} Summary</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td>Total Revenue:</td>
+                        <td class="text-end fw-bold">₹{{ "%.2f"|format(this_revenue) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Profit:</td>
+                        <td class="text-end fw-bold text-success">₹{{ "%.2f"|format(this_profit) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Transactions:</td>
+                        <td class="text-end fw-bold">{{ this_transactions }}</td>
+                    </tr>
+                    <tr>
+                        <td>Avg per Transaction:</td>
+                        <td class="text-end fw-bold">₹{{ "%.2f"|format(this_revenue / this_transactions if this_transactions > 0 else 0) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">{{ last_month_start.strftime('%B %Y') }} Summary</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td>Total Revenue:</td>
+                        <td class="text-end fw-bold">₹{{ "%.2f"|format(last_revenue) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Profit:</td>
+                        <td class="text-end fw-bold text-success">₹{{ "%.2f"|format(last_profit) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Transactions:</td>
+                        <td class="text-end fw-bold">{{ last_transactions }}</td>
+                    </tr>
+                    <tr>
+                        <td>Avg per Transaction:</td>
+                        <td class="text-end fw-bold">₹{{ "%.2f"|format(last_revenue / last_transactions if last_transactions > 0 else 0) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+new Chart(document.getElementById('trendsChart').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: {{ chart_labels | tojson }},
+        datasets: [{
+            label: '{{ this_month_start.strftime("%B %Y") }}',
+            data: {{ chart_this_month | tojson }},
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            fill: true,
+            tension: 0.3
+        }, {
+            label: '{{ last_month_start.strftime("%B %Y") }}',
+            data: {{ chart_last_month | tojson }},
+            borderColor: '#6c757d',
+            backgroundColor: 'rgba(108, 117, 125, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderDash: [5, 5]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Day of Month'
+                }
+            },
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Revenue (₹)'
+                },
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

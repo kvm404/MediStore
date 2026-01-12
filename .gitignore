@@ -6,3 +6,5 @@ __pycache__/
 
 instance/
 migrations/
+
+CONTEXT_SNAPSHOT.md
