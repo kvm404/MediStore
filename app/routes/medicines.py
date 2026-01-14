@@ -23,7 +23,9 @@ def list_medicines():
     
     # Apply search filter
     if search:
-        query = query.filter(Medicine.name.ilike(f'%{search}%'))
+        # Escape LIKE special characters
+        escaped_search = search.replace('%', r'\%').replace('_', r'\_')
+        query = query.filter(Medicine.name.ilike(f'%{escaped_search}%', escape='\\'))
     
     # Get all medicines (we'll filter stock in Python due to computed property)
     medicines_list = query.order_by(Medicine.name).all()
@@ -136,7 +138,7 @@ def add_batch(medicine_id):
             errors.append('Expiry date is required')
         if not mrp or mrp <= 0:
             errors.append('Valid MRP is required')
-        if not stock_quantity or stock_quantity < 0:
+        if stock_quantity is None or stock_quantity < 0:
             errors.append('Valid stock quantity is required')
         
         if errors:

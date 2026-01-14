@@ -20,10 +20,13 @@ def search_medicines():
     if len(query) < 2:
         return jsonify([])
     
+    # Escape LIKE special characters to prevent unexpected matching
+    escaped_query = query.replace('%', r'\%').replace('_', r'\_')
+    
     # Search medicines by name (case-insensitive)
     medicines = Medicine.query.filter(
         Medicine.is_active == True,
-        Medicine.name.ilike(f'%{query}%')
+        Medicine.name.ilike(f'%{escaped_query}%', escape='\\')
     ).order_by(Medicine.name).limit(limit).all()
     
     results = []

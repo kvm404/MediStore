@@ -51,9 +51,12 @@ class Batch(db.Model):
     @property
     def unit_price(self):
         """Calculate price per single unit (tablet/ml)."""
-        if self.medicine and self.medicine.units_per_pack > 0:
-            return self.mrp / self.medicine.units_per_pack
-        return self.mrp
+        try:
+            if self.medicine and self.medicine.units_per_pack > 0:
+                return self.mrp / self.medicine.units_per_pack
+        except Exception:
+            pass
+        return self.mrp if self.mrp else 0
 
     def to_dict(self):
         return {

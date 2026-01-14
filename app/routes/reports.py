@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request
-from app.main import db
-from app.models import Medicine, Batch, Sale, SaleItem, Category
+from app.models import db, Medicine, Batch, Sale, SaleItem, Category
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from calendar import monthrange
 
 reports = Blueprint('reports', __name__, url_prefix='/reports')
@@ -296,8 +296,10 @@ def top_sellers_report():
     period = request.args.get('period', 'this_month')
     start_date, end_date, period = get_date_range(period)
     
-    # Get all sale items in range (excluding unlisted)
-    sale_items = db.session.query(SaleItem).join(Sale).filter(
+    # Get all sale items in range (excluding unlisted) with eager loading
+    sale_items = db.session.query(SaleItem).join(Sale).options(
+        joinedload(SaleItem.batch).joinedload(Batch.medicine)
+    ).filter(
         func.date(Sale.sale_date) >= start_date,
         func.date(Sale.sale_date) <= end_date,
         SaleItem.batch_id.isnot(None)
@@ -350,8 +352,10 @@ def profitable_products_report():
     period = request.args.get('period', 'this_month')
     start_date, end_date, period = get_date_range(period)
     
-    # Get all sale items in range (excluding unlisted)
-    sale_items = db.session.query(SaleItem).join(Sale).filter(
+    # Get all sale items in range (excluding unlisted) with eager loading
+    sale_items = db.session.query(SaleItem).join(Sale).options(
+        joinedload(SaleItem.batch).joinedload(Batch.medicine)
+    ).filter(
         func.date(Sale.sale_date) >= start_date,
         func.date(Sale.sale_date) <= end_date,
         SaleItem.batch_id.isnot(None)
@@ -404,8 +408,10 @@ def category_performance_report():
     period = request.args.get('period', 'this_month')
     start_date, end_date, period = get_date_range(period)
     
-    # Get all sale items in range (excluding unlisted)
-    sale_items = db.session.query(SaleItem).join(Sale).filter(
+    # Get all sale items in range (excluding unlisted) with eager loading
+    sale_items = db.session.query(SaleItem).join(Sale).options(
+        joinedload(SaleItem.batch).joinedload(Batch.medicine).joinedload(Medicine.category)
+    ).filter(
         func.date(Sale.sale_date) >= start_date,
         func.date(Sale.sale_date) <= end_date,
         SaleItem.batch_id.isnot(None)
@@ -593,8 +599,11 @@ def margin_alerts_report():
     period = request.args.get('period', 'this_month')
     start_date, end_date, period = get_date_range(period)
     
-    # Get all sale items in range (excluding unlisted)
-    sale_items = db.session.query(SaleItem).join(Sale).filter(
+    # Get all sale items in range (excluding unlisted) with eager loading
+    sale_items = db.session.query(SaleItem).join(Sale).options(
+        joinedload(SaleItem.sale),
+        joinedload(SaleItem.batch).joinedload(Batch.medicine)
+    ).filter(
         func.date(Sale.sale_date) >= start_date,
         func.date(Sale.sale_date) <= end_date,
         SaleItem.batch_id.isnot(None)

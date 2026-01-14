@@ -107,7 +107,7 @@
                         <span class="fw-bold">{{ "%.1f"|format(margin_percent) }}%</span>
                     </div>
                     <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-success" style="width: {{ margin_percent }}%"></div>
+                        <div class="progress-bar bg-success" style="width: {{ [margin_percent, 100] | min }}%"></div>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -116,7 +116,7 @@
                         <span class="fw-bold">{{ "%.1f"|format(100 - margin_percent) }}%</span>
                     </div>
                     <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-danger" style="width: {{ 100 - margin_percent }}%"></div>
+                        <div class="progress-bar bg-danger" style="width: {{ [[100 - margin_percent, 0] | max, 100] | min }}%"></div>
                     </div>
                 </div>
             </div>

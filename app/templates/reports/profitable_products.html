@@ -90,7 +90,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="progress" style="width: 60px; height: 20px;">
-                                        <div class="progress-bar bg-success" style="width: {{ item.margin }}%">
+                                        <div class="progress-bar bg-success" style="width: {{ [item.margin, 100] | min }}%">
                                             {{ "%.0f"|format(item.margin) }}%
                                         </div>
                                     </div>
